@@ -24,6 +24,7 @@ Sample Implementation of kue mq in a simple node app.
         $ brew install --cask redis-stack
 
   - Start Redis Server
+
         $ redis-server
 
     Note: (Take note of the port)
