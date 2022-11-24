@@ -45,6 +45,16 @@ kue.app.listen(4000);
   // Pull Jobs out of stuck state
   queue.watchStuckJobs(2000);
 
+
+  // retry stuck active jobs
+
+  kue.Job.rangeByState( 'active', 0, 1000, 'asc', function( err, jobs ) {
+    jobs.forEach(function(job) {
+       job.complete();
+       queue.create(job.type, job.data).save(); 
+    })
+});
+
   //Parse Json Body
   app.use(express.json())
 
