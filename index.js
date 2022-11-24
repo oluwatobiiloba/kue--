@@ -1,6 +1,7 @@
 const express = require('express');
 const kue = require('kue');
 const app = express();
+const bodyParser = require('body-parser')
 
 //configure kue
 var cluster = require('cluster');
@@ -37,15 +38,20 @@ kue.app.listen(4000);
 
   // Pick errors
   queue.on('error', function (err) {
-    console.log('Queue Error... ', err);
+    console.log('Queue Error: ', err);
   });
 
 
   // Pull Jobs out of stuck state
   queue.watchStuckJobs(2000);
 
+  //Parse Json Body
+  app.use(express.json())
+
   //Welcome to the worker Dojo
 app.get('/', (req, res) => res.send("Welcome to the worker Dojo!, May the best worker win"));
+
+
 
 //Create Normal Job
 app.get('/job1', (req, res) => {
@@ -70,8 +76,8 @@ app.get('/job1', (req, res) => {
     });
 });
 
-app.get('/job2', (req, res) => {
-    const job = queue.create('Delayed Job', {message:'Hunt for shadows by midnight', created: new Date().toLocaleString()
+app.post('/job2', (req, res) => {
+    const job = queue.create('Delayed Job', {message: req.body.message, created: new Date().toLocaleString()
     })
     .delay(7000)
     .priority('low')
@@ -81,9 +87,6 @@ app.get('/job2', (req, res) => {
           res.send('error');
           return;
         }
-
-        let delayed = []
-        let inactive = []
 
         //list Delayed tasks
         queue.delayed( function( err, ids ) {
